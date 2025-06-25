@@ -1,0 +1,30 @@
+{
+  "node": {
+    "902a4fa9a4e571061a823c2b4c41a1c4ad0d78bc": {
+      "workers": {
+        "app/page": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fhome%2Fproject%2Fsrc%2Flib%2Fcommon-actions.ts%22%2C%5B%22refreshSession%22%2C%22signOut%22%2C%22refreshSessionWithPassword%22%5D%5D%5D&__client_imported__=true!"
+      },
+      "layer": {
+        "app/page": "action-browser"
+      }
+    },
+    "f988efd77547106220e7d613496bcccafb88a85e": {
+      "workers": {
+        "app/page": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fhome%2Fproject%2Fsrc%2Flib%2Fcommon-actions.ts%22%2C%5B%22refreshSession%22%2C%22signOut%22%2C%22refreshSessionWithPassword%22%5D%5D%5D&__client_imported__=true!"
+      },
+      "layer": {
+        "app/page": "action-browser"
+      }
+    },
+    "fbcf225aa392541693d8db92ecfc551ac26cdd63": {
+      "workers": {
+        "app/page": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fhome%2Fproject%2Fsrc%2Flib%2Fcommon-actions.ts%22%2C%5B%22refreshSession%22%2C%22signOut%22%2C%22refreshSessionWithPassword%22%5D%5D%5D&__client_imported__=true!"
+      },
+      "layer": {
+        "app/page": "action-browser"
+      }
+    }
+  },
+  "edge": {},
+  "encryptionKey": "UQ7+hKqt+xL38vDfo04FuBu0y9ElvjE8fwyzJWB0pFE="
+}
