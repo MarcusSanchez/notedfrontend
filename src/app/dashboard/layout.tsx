@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Role, Status } from "@/proto/user_pb";
 import { DashboardNavigator } from "@/app/dashboard/(components)/Sidebar";
 import { SpinnerCard } from "@/components/utility/SpinnerCard";
+import Footer from "@/app/(components)/Footer";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const { user } = useUserStore();

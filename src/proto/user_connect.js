@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { ApproveNurseRequest, ChangeUserPasswordRequest, ChangeUserPasswordWResetTokenRequest, DeleteUserRequest, GetUserRequest, GetUserResponse, ListPendingNursesRequest, ListPendingNursesResponse, ListUsersRequest, ListUsersResponse, RejectNurseRequest, SearchUsersRequest, SearchUsersResponse, UpdateUserRequest } from "./user_pb.js";
+import { ApproveNurseRequest, ChangeUserPasswordRequest, ChangeUserPasswordWResetTokenRequest, DeleteUserRequest, GetUserRequest, GetUserResponse, GetUsersStatsRequest, GetUsersStatsResponse, ListPendingNursesRequest, ListPendingNursesResponse, ListUsersRequest, ListUsersResponse, RejectNurseRequest, SearchUsersRequest, SearchUsersResponse, UpdateUserRequest } from "./user_pb.js";
 import { Empty, MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -64,6 +64,15 @@ export const UserManagementService = {
       name: "ListUsers",
       I: ListUsersRequest,
       O: ListUsersResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc user.v1.UserManagementService.GetUsersStats
+     */
+    getUsersStats: {
+      name: "GetUsersStats",
+      I: GetUsersStatsRequest,
+      O: GetUsersStatsResponse,
       kind: MethodKind.Unary,
     },
     /**

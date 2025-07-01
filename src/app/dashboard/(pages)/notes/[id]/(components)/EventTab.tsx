@@ -1,17 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button, buttonVariants } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import React, { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -20,9 +15,16 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue
-} from "@/components/ui/select";
-import { Edit, PlusCircle, Trash2 } from "lucide-react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+} from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,30 +35,34 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { MethodType, Note } from "@/proto/note_pb";
+} from '@/components/ui/alert-dialog';
+import { Separator } from '@/components/ui/separator';
+import {
+  PlusCircle,
+  Edit,
+  Trash2,
+  ChevronDown,
+  ChevronUp,
+  X,
+  Activity
+} from 'lucide-react';
+import { MethodType } from '@/proto/note_pb';
+import { Note } from '@/proto/note_pb';
+import { method2text } from "@/lib/tools/enum2text";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   addChoiceToEvent,
   addEvent,
   addMethodToEvent,
   removeChoiceFromEvent,
-  removeEvent,
-  removeMethodFromEvent,
-  updateChoiceInEvent,
+  removeEvent, removeMethodFromEvent, updateChoiceInEvent,
   updateEventDescription
 } from "@/app/dashboard/(pages)/notes/[id]/actions";
-import { cn, fn } from "@/lib/utils";
-import { method2text } from "@/lib/tools/enum2text";
-import { Textarea } from "@/components/ui/textarea";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { choiceSchema, eventDescriptionSchema } from "@/lib/schemas/schemas";
+import { fn } from "@/lib/utils";
 
-export function EventTab({ note }: { note: Note }) {
-  const queryClient = useQueryClient();
+export function EventsTab({ note }: { note: Note }) {
+  const qc = useQueryClient();
+
   const [open, setOpen] = useState(false);
   const [eventDescription, setEventDescription] = useState('');
   const [eventMethods, setEventMethods] = useState<MethodType[]>([]);
@@ -75,7 +81,7 @@ export function EventTab({ note }: { note: Note }) {
       },
     })),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['getNote', note.id] });
+      qc.invalidateQueries({ queryKey: ['getNote', note.id] });
       setOpen(false);
       setEventDescription('');
       setEventMethods([]);
@@ -106,44 +112,73 @@ export function EventTab({ note }: { note: Note }) {
   ].filter((method) => !eventMethods.includes(method));
 
   return (
-    <Card>
-      <CardHeader className="pb-4">
-        <CardTitle className="flex justify-between items-center text-xl">
-          Events
+    <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+      <CardHeader className="border-b border-gray-100">
+        <div className="flex flex-col md:flex-row justify-between gap-4">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+              <Activity className="w-5 h-5 text-green-600" />
+            </div>
+            <div>
+              <CardTitle className="text-xl font-semibold text-gray-900">
+                Events
+              </CardTitle>
+              <CardDescription className="text-gray-600">
+                {note.events.length} event{note.events.length !== 1 ? 's' : ''} recorded for this note
+              </CardDescription>
+            </div>
+          </div>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button className="font-semibold">
-                <PlusCircle className="mr-2 h-4 w-4" />
+              <Button variant="outline" className="border-green-200 text-green-600 hover:bg-green-50">
+                <PlusCircle className="w-4 h-4 mr-2" />
                 Add Event
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px]">
+            <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>Add New Event</DialogTitle>
-                <DialogDescription>
+                <DialogTitle className="text-xl font-bold text-gray-900">
+                  Add New Event
+                </DialogTitle>
+                <DialogDescription className="text-gray-600">
                   Please provide a description of the event, the methods used, and the choices provided.
                 </DialogDescription>
               </DialogHeader>
+
               <div className="grid gap-6 py-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="event-description" className="font-bold">Event Description</Label>
+                {/* Event Description */}
+                <div className="space-y-2">
+                  <Label htmlFor="event-description" className="text-sm font-semibold text-gray-700">
+                    Event Description
+                  </Label>
                   <Textarea
                     id="event-description"
                     value={eventDescription}
                     onChange={(e) => setEventDescription(e.target.value)}
                     placeholder="Describe the event..."
-                    className="h-24"
-                    maxLength={eventDescriptionSchema.max}
+                    className="min-h-[100px] border-gray-300 focus:border-blue-400 focus:ring-blue-400/20"
+                    maxLength={500}
                   />
+                  <p className="text-xs text-gray-500">
+                    {eventDescription.length}/500 characters
+                  </p>
                 </div>
-                <div className="grid gap-2">
-                  <div className="flex justify-between gap-8">
+
+                {/* Methods */}
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
                     <div>
-                      <Label className="font-bold">Methods</Label>
-                      <p className="text-sm text-muted-foreground">What methods did you use to assist in this event.</p>
+                      <Label className="text-sm font-semibold text-gray-700">Methods</Label>
+                      <p className="text-xs text-gray-500">What methods did you use to assist in this event?</p>
                     </div>
-                    <Select value="" onValueChange={(value) => addMethod(parseInt(value))}>
-                      <SelectTrigger className="w-min my-auto">
+                    <Select
+                      value=""
+                      onValueChange={(value) => {
+                        const methodType = parseInt(value) as MethodType;
+                        addMethod(methodType);
+                      }}
+                    >
+                      <SelectTrigger className="w-[200px] focus:border-blue-400 focus:ring-blue-400/20">
                         <SelectValue placeholder="Select Method" />
                       </SelectTrigger>
                       <SelectContent>
@@ -158,127 +193,169 @@ export function EventTab({ note }: { note: Note }) {
                       </SelectContent>
                     </Select>
                   </div>
+
+                  {/* Selected Methods */}
                   <div className="flex flex-wrap gap-2">
                     {eventMethods.map((method, index) => (
-                      <span
+                      <div
                         key={index}
-                        className="inline-flex items-center rounded-full bg-secondary px-2.5 py-0.5 text-xs font-semibold text-secondary-foreground"
+                        className="inline-flex items-center rounded-full bg-blue-100 text-blue-800 px-3 py-1 text-sm font-medium border border-blue-200"
                       >
                         {method2text(method)}
                         <button
                           type="button"
                           onClick={() => removeMethod(index)}
-                          className="ml-1 inline-flex h-4 w-4 items-center justify-center rounded-full bg-secondary-foreground/10 hover:bg-secondary-foreground/20"
+                          className="ml-2 inline-flex h-4 w-4 items-center justify-center rounded-full hover:bg-blue-200 transition-colors"
                         >
-                          <Trash2 className="h-3 w-3" />
-                          <span className="sr-only">Remove</span>
+                          <X className="h-3 w-3" />
                         </button>
-                      </span>
+                      </div>
                     ))}
                   </div>
                 </div>
-                <div className="flex gap-2 items-center">
-                  <Checkbox
-                    checked={hasChoices}
-                    onCheckedChange={(c) => setHasChoices(!!c)}
-                  />
-                  <Label className="font-bold text-sm cursor-pointer" onClick={() => setHasChoices(c => !c)}>
-                    Does this event require choices?
-                  </Label>
-                </div>
-                {hasChoices && (
-                  <div className="grid gap-2">
-                    <Label className="font-bold">Choices <span className="font-normal text-muted-foreground">(Minimum of 3)</span></Label>
-                    {eventChoices.length > 0 && (
-                      <div className="h-min w-full rounded-md border py-2 px-4">
-                        {eventChoices.map((choice, index) => (
-                          <div key={index}>
-                            <div key={index} className="flex items-center justify-between">
-                              <span className="text-sm">{choice}</span>
+
+                {/* Choices Section */}
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      checked={hasChoices}
+                      onCheckedChange={(checked) => setHasChoices(!!checked)}
+                    />
+                    <Label
+                      className="text-sm font-semibold cursor-pointer text-gray-700"
+                      onClick={() => setHasChoices(!hasChoices)}
+                    >
+                      Does this event require choices?
+                    </Label>
+                  </div>
+
+                  {hasChoices && (
+                    <div className="space-y-3">
+                      <Label className="text-sm font-semibold text-gray-700">
+                        Choices <span className="font-normal text-gray-500">(Minimum of 3)</span>
+                      </Label>
+
+                      {/* Existing Choices */}
+                      {eventChoices.length > 0 && (
+                        <div className="border border-gray-200 rounded-lg p-3 space-y-2">
+                          {eventChoices.map((choice, index) => (
+                            <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded-md">
+                              <span className="text-sm text-gray-900">{choice}</span>
                               <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => removeChoice(index)}
-                                className="h-8 w-8 p-0"
+                                className="h-6 w-6 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
                               >
-                                <Trash2 className="h-4 w-4" />
-                                <span className="sr-only">Remove</span>
+                                <Trash2 className="h-3 w-3" />
                               </Button>
                             </div>
-                            {index !== eventChoices.length - 1 && <Separator className="mt-2" />}
-                          </div>
-                        ))}
+                          ))}
+                        </div>
+                      )}
+
+                      {eventChoices.length === 0 && (
+                        <div className="flex justify-center items-center h-16 text-gray-500 text-sm border border-dashed border-gray-300 rounded-lg">
+                          No choices recorded for this event. If applicable, please add choices to this event.
+                        </div>
+                      )}
+
+                      <Separator />
+
+                      {/* Add New Choice */}
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Enter new choice"
+                          value={newChoice}
+                          onChange={(e) => setNewChoice(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              addChoice();
+                            }
+                          }}
+                          className="border-gray-300 focus:border-blue-400 focus:ring-blue-400/20"
+                          maxLength={100}
+                        />
+                        <Button
+                          variant="outline"
+                          onClick={addChoice}
+                          size="sm"
+                          className="border-blue-200 text-blue-600 hover:bg-blue-50"
+                        >
+                          <PlusCircle className="h-4 w-4 mr-1" />
+                          Add
+                        </Button>
                       </div>
-                    )}
-                    {eventChoices.length === 0 && (
-                      <div className="flex justify-center items-center h-16 mb-[-1rem] text-muted-foreground text-sm">
-                        No choices recorded for this event. Please add a choice.
-                      </div>
-                    )}
-                    <Separator className="my-4" />
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder="Enter new choice"
-                        value={newChoice}
-                        onChange={(e) => setNewChoice(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                            addChoice();
-                          }
-                        }}
-                        maxLength={choiceSchema.max}
-                      />
-                      <Button variant="outline" onClick={addChoice} size="sm" className="font-bold h-full">
-                        <PlusCircle className="h-4 w-4" />
-                        Add
-                      </Button>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
+
               <DialogFooter>
                 <Button
-                  type="submit"
-                  onClick={() => addEventMutation.mutate()}
-                  className="font-bold"
-                  disabled={!eventDescription.trim() || eventMethods.length === 0 || (hasChoices && eventChoices.length < 3)}
+                  variant="outline"
+                  onClick={() => {
+                    setOpen(false);
+                    setEventDescription('');
+                    setEventMethods([]);
+                    setEventChoices([]);
+                    setHasChoices(false);
+                    setNewChoice('');
+                  }}
                 >
-                  Add Event
+                  Cancel
+                </Button>
+                <Button
+                  onClick={() => addEventMutation.mutate()}
+                  disabled={
+                    addEventMutation.isPending ||
+                    !eventDescription.trim() ||
+                    eventMethods.length === 0 ||
+                    (hasChoices && eventChoices.length < 3)
+                  }
+                  className="bg-green-600 hover:bg-green-700 text-white"
+                >
+                  {addEventMutation.isPending ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                      Adding...
+                    </>
+                  ) : (
+                    <>Add Event</>
+                  )}
                 </Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
-        </CardTitle>
+        </div>
       </CardHeader>
-      <CardContent>
+
+      <CardContent className="pt-6">
         {note.events.length === 0 ? (
-          <div className="flex justify-center items-center h-16 text-muted-foreground text-sm">
-            No events recorded for this note. Please add an event.
+          <div className="flex justify-center items-center h-32 text-gray-500 text-sm border border-dashed border-gray-300 rounded-lg">
+            No events recorded for this note. Click "Add Event" to add a new event.
           </div>
         ) : (
-          <Accordion
-            type="multiple"
-            defaultValue={[]}
-            className="w-full space-y-4"
-          >
+          <div className="space-y-4">
             {note.events.map((event, index) => (
               <EventAccordionItem
                 key={event.id}
                 event={event}
                 noteId={note.id}
-                index={index}
               />
             ))}
-          </Accordion>
+          </div>
         )}
       </CardContent>
     </Card>
   );
 }
 
-function EventAccordionItem({ event, noteId, index }: { event: Note['events'][0], noteId: string, index: number }) {
+function EventAccordionItem({ event, noteId }: { event: Note['events'][0]; noteId: string }) {
   const qc = useQueryClient();
+
+  const [isExpanded, setIsExpanded] = useState(true);
   const [editDescription, setEditDescription] = useState(false);
   const [newDescription, setNewDescription] = useState(event.description);
 
@@ -300,70 +377,135 @@ function EventAccordionItem({ event, noteId, index }: { event: Note['events'][0]
   });
 
   return (
-    <AccordionItem value={`item-${index}`} className="border rounded-lg">
-      <AccordionTrigger className="px-4 py-2 hover:no-underline">
-        <div className="flex justify-between items-center w-full">
-          <div className="flex flex-col justify-center">
-            <p className="font-bold text-sm">Event Description</p>
-            {!editDescription && <span className="font-medium text-left">{event.description}</span>}
-          </div>
-          <div className="flex items-center space-x-2">
-            <span className={cn(buttonVariants({ variant: "ghost", size: "sm" }))} onClick={(e) => {
-              e.stopPropagation();
-              setEditDescription(true);
-            }}>
-              <Edit className="h-4 w-4" />
-            </span>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <span className={cn(buttonVariants({
-                  variant: "ghost",
-                  size: "sm"
-                }))} onClick={(e) => e.stopPropagation()}>
-                  <Trash2 className="h-4 w-4" />
-                </span>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete the event and all associated data.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => removeEventMutation.mutate()}>Delete</AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
-        </div>
-      </AccordionTrigger>
-      <AccordionContent className="px-4 py-2">
-        {editDescription ? (
-          <div className="mb-4">
-            <Textarea
-              value={newDescription}
-              onChange={(e) => setNewDescription(e.target.value)}
-              className="w-full mb-2"
-              maxLength={eventDescriptionSchema.max}
-            />
-            <div className="flex justify-end space-x-2">
-              <Button variant="outline" size="sm" onClick={() => setEditDescription(false)}>Cancel</Button>
-              <Button size="sm" onClick={() => updateEventMutation.mutate()}>Save</Button>
+    <div className="border border-gray-200 rounded-lg bg-white shadow-sm">
+      {/* Header */}
+      <div className="flex items-center justify-between p-4 border-b border-gray-100">
+        <div className="flex-1">
+          <div className="flex items-center space-x-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="p-1 h-6 w-6"
+            >
+              {isExpanded ? (
+                <ChevronUp className="h-4 w-4" />
+              ) : (
+                <ChevronDown className="h-4 w-4" />
+              )}
+            </Button>
+            <div className="flex-1">
+              <p className="font-semibold text-sm text-gray-900">Event Description</p>
+              {!editDescription && (
+                <p className="text-sm text-gray-700 mt-1 line-clamp-2">{event.description}</p>
+              )}
             </div>
           </div>
-        ) : null}
-        <MethodsSection event={event} noteId={noteId} />
-        <ChoicesSection event={event} noteId={noteId} />
-      </AccordionContent>
-    </AccordionItem>
+        </div>
+
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setEditDescription(true);
+              setIsExpanded(true);
+            }}
+            className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+          >
+            <Edit className="h-4 w-4" />
+          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete the event and all associated data.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => removeEventMutation.mutate()}
+                  className="bg-red-600 hover:bg-red-700"
+                >
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      </div>
+
+      {/* Content */}
+      {isExpanded && (
+        <div className="p-4 space-y-4">
+          {/* Edit Description */}
+          {editDescription && (
+            <div className="space-y-3">
+              <Label className="text-sm font-semibold text-gray-700">Edit Description</Label>
+              <Textarea
+                value={newDescription}
+                onChange={(e) => setNewDescription(e.target.value)}
+                className="border-gray-300 focus:border-blue-400 focus:ring-blue-400/20"
+                maxLength={500}
+              />
+              <div className="flex justify-end space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setEditDescription(false);
+                    setNewDescription(event.description);
+                  }}
+                  disabled={updateEventMutation.isPending}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => updateEventMutation.mutate()}
+                  disabled={updateEventMutation.isPending}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  {updateEventMutation.isPending ? (
+                    <>
+                      <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>Save</>
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Methods */}
+          <MethodsSection event={event} noteId={noteId} />
+
+          {/* Choices */}
+          <ChoicesSection event={event} noteId={noteId} />
+        </div>
+      )}
+    </div>
   );
 }
 
-function MethodsSection({ event, noteId }: { event: Note['events'][0], noteId: string }) {
+function MethodsSection({ event, noteId }: { event: Note['events'][0]; noteId: string  }) {
   const qc = useQueryClient();
+
   const [open, setOpen] = useState(false);
+  const [newMethod, setNewMethod] = useState<MethodType | null>(null);
 
   const addMethodMutation = useMutation({
     mutationKey: ["addMethod", event.id],
@@ -393,52 +535,74 @@ function MethodsSection({ event, noteId }: { event: Note['events'][0], noteId: s
   ].filter((method) => !event.methods.map((m) => m.method).includes(method));
 
   return (
-    <div className="mb-4">
-      <div className="flex justify-between items-center mb-2">
-        <h4 className="font-semibold">Methods</h4>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button variant="secondary" size="sm" className="font-bold">
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Add Method
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add New Method</DialogTitle>
-              <DialogDescription>
-                What method was used to assist the individual in this event?
-              </DialogDescription>
-            </DialogHeader>
-            <Select onValueChange={(method) => addMethodMutation.mutate(parseInt(method))}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select method" />
-              </SelectTrigger>
-              <SelectContent>
-                {filteredMethods.map((method) => (
-                  <SelectItem key={method} value={method.toString()}>
-                    {method2text(method)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </DialogContent>
-        </Dialog>
+    <div className="space-y-2">
+      <div className="flex justify-between items-center">
+        <Label className="text-sm font-semibold text-gray-700">Methods</Label>
+        {filteredMethods.length > 0 && (
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm" className="border-blue-200 text-blue-600 hover:bg-blue-50">
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Add Method
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add New Method</DialogTitle>
+                <DialogDescription>
+                  What method was used to assist the individual in this event?
+                </DialogDescription>
+              </DialogHeader>
+              <Select onValueChange={(value) => setNewMethod(parseInt(value) as MethodType)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select method" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>Choose a method</SelectLabel>
+                    {filteredMethods.map((method) => (
+                      <SelectItem key={method} value={method.toString()}>
+                        {method2text(method)}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setOpen(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  onClick={() => addMethodMutation.mutate(newMethod!)}
+                  disabled={newMethod === null || addMethodMutation.isPending}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  {addMethodMutation.isPending ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                      Adding...
+                    </>
+                  ) : (
+                    <>Add Method</>
+                  )}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
-      {event.methods.length === 0 && (
-        <div className="flex justify-center items-center h-16 text-muted-foreground text-sm">
-          No methods recorded for this event. Please add a method.
-        </div>
-      )}
       <div className="flex flex-wrap gap-2">
-        {event.methods.map((method) => (
-          <div key={method.id} className="flex items-center bg-secondary text-secondary-foreground rounded-full px-3 py-1">
-            <span className="text-sm">{method2text(method.method)}</span>
+        {event.methods.map((method, methodIndex) => (
+          <div key={methodIndex} className="inline-flex items-center rounded-full bg-blue-100 text-blue-800 px-3 py-1 text-sm font-medium border border-blue-200">
+            <span>{method2text(method.method)}</span>
             <Button variant="ghost" size="sm" className="ml-2 h-4 w-4 p-0" onClick={() => removeMethodMutation.mutate(method.id)}>
-              <Trash2 className="h-3 w-3" />
+              <X className="h-3 w-3" />
             </Button>
           </div>
         ))}
+        {event.methods.length === 0 && (
+          <div className="text-sm text-gray-500">No methods recorded for this event.</div>
+        )}
       </div>
     </div>
   );
@@ -446,10 +610,11 @@ function MethodsSection({ event, noteId }: { event: Note['events'][0], noteId: s
 
 function ChoicesSection({ event, noteId }: { event: Note['events'][0], noteId: string }) {
   const qc = useQueryClient()
-  const [addDialogOpen, setAddDialogOpen] = useState(false)
-  const [editDialogOpen, setEditDialogOpen] = useState<string | null>(null)
-  const [newChoice, setNewChoice] = useState("")
-  const [editingChoice, setEditingChoice] = useState<{ id: string, description: string } | null>(null)
+
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [newChoice, setNewChoice] = useState("");
+  const [editingChoice, setEditingChoice] = useState<{ id: string, description: string } | null>(null);
 
   const addChoiceMutation = useMutation({
     mutationKey: ["addChoice", event.id],
@@ -477,17 +642,17 @@ function ChoicesSection({ event, noteId }: { event: Note['events'][0], noteId: s
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["getNote", noteId] })
       setEditingChoice(null)
-      setEditDialogOpen(null)
+      setEditDialogOpen(false)
     },
   })
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-2">
-        <h4 className="font-semibold">Choices</h4>
+    <div className="space-y-2">
+      <div className="flex justify-between items-center">
+        <Label className="text-sm font-semibold text-gray-700">Choices</Label>
         <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
           <DialogTrigger asChild>
-            <Button variant="secondary" size="sm" className="font-bold">
+            <Button variant="outline" size="sm" className="border-green-200 text-green-600 hover:bg-green-50">
               <PlusCircle className="mr-2 h-4 w-4" />
               Add Choice
             </Button>
@@ -503,31 +668,48 @@ function ChoicesSection({ event, noteId }: { event: Note['events'][0], noteId: s
               value={newChoice}
               onChange={(e) => setNewChoice(e.target.value)}
               placeholder="Enter new choice"
-              maxLength={choiceSchema.max}
+              maxLength={100}
             />
             <DialogFooter>
-              <Button className="font-bold" variant="outline" onClick={() => {
-                setNewChoice("")
-                setAddDialogOpen(false)
+              <Button variant="outline" onClick={() => {
+                setNewChoice("");
+                setAddDialogOpen(false);
               }}>
                 Cancel
               </Button>
-              <Button className="font-bold" onClick={() => addChoiceMutation.mutate(newChoice)} disabled={!newChoice}>
-                Add Choice
+              <Button
+                onClick={() => addChoiceMutation.mutate(newChoice)}
+                disabled={!newChoice.trim() || addChoiceMutation.isPending}
+                className="bg-green-600 hover:bg-green-700 text-white"
+              >
+                {addChoiceMutation.isPending ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                    Adding...
+                  </>
+                ) : (
+                  <>Add Choice</>
+                )}
               </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
       <div className="space-y-2">
-        {event.choices.map((choice, i) => (
-          <div key={choice.id}>
-            <div className="flex items-center justify-between rounded-md p-2">
-              <span>{choice.description}</span>
+        {event.choices.map((choice, choiceIndex) => (
+          <div key={choiceIndex}>
+            <div className="flex items-center justify-between p-2 bg-gray-50 rounded-md border border-gray-200">
+              <span className="text-sm text-gray-900">{choice.description}</span>
               <div className="flex space-x-2">
-                <Dialog open={editDialogOpen === choice.id} onOpenChange={(open) => setEditDialogOpen(open ? choice.id : null)}>
+                <Dialog open={editDialogOpen && editingChoice?.id === choice.id} onOpenChange={(open) => {
+                  setEditDialogOpen(open);
+                  if (!open) setEditingChoice(null);
+                }}>
                   <DialogTrigger asChild>
-                    <Button variant="ghost" size="sm">
+                    <Button variant="ghost" size="sm" onClick={() => setEditingChoice({
+                      id: choice.id,
+                      description: choice.description
+                    })}>
                       <Edit className="h-4 w-4" />
                     </Button>
                   </DialogTrigger>
@@ -539,19 +721,30 @@ function ChoicesSection({ event, noteId }: { event: Note['events'][0], noteId: s
                       </DialogDescription>
                     </DialogHeader>
                     <Input
-                      value={editingChoice?.id === choice.id ? editingChoice.description : choice.description}
-                      onChange={(e) => setEditingChoice({ id: choice.id, description: e.target.value })}
-                      maxLength={choiceSchema.max}
+                      value={editingChoice?.description || ''}
+                      onChange={(e) => setEditingChoice(prev => prev ? { ...prev, description: e.target.value } : null)}
+                      maxLength={100}
                     />
                     <DialogFooter>
+                      <Button variant="outline" onClick={() => {
+                        setEditDialogOpen(false);
+                        setEditingChoice(null);
+                      }}>
+                        Cancel
+                      </Button>
                       <Button
-                        className="font-bold"
-                        onClick={() => editingChoice && updateChoiceMutation.mutate({
-                          choiceId: editingChoice.id,
-                          newDescription: editingChoice.description
-                        })}
+                        onClick={() => updateChoiceMutation.mutate({ choiceId: editingChoice!.id, newDescription: editingChoice!.description})}
+                        disabled={!editingChoice?.description.trim() || updateChoiceMutation.isPending}
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
                       >
-                        Update Choice
+                        {updateChoiceMutation.isPending ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                            Updating...
+                          </>
+                        ) : (
+                          <>Update Choice</>
+                        )}
                       </Button>
                     </DialogFooter>
                   </DialogContent>
@@ -561,16 +754,17 @@ function ChoicesSection({ event, noteId }: { event: Note['events'][0], noteId: s
                 </Button>
               </div>
             </div>
-            {i !== event.choices.length - 1 && <Separator />}
+            {choiceIndex !== event.choices.length - 1 && <Separator className="my-2" />}
           </div>
         ))}
-        {event.choices.length === 0 && (
-          <div className="flex justify-center items-center h-16 text-muted-foreground text-sm">
-            No choices recorded for this event. If applicable, please add choices to this event.
-          </div>
-        )}
       </div>
-    </div>
-  )
-}
 
+      {/* Show empty state if no choices */}
+      {event.choices.length === 0 && (
+        <div className="flex justify-center items-center h-16 text-gray-500 text-sm border border-dashed border-gray-300 rounded-lg">
+          No choices recorded for this event. Click "Add Choice" to add options that were provided to the client.
+        </div>
+      )}
+    </div>
+  );
+}

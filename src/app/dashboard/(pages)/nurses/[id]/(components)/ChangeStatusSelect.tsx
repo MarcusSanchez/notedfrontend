@@ -7,8 +7,7 @@ import {
   Select,
   SelectContent,
   SelectGroup,
-  SelectItem,
-  SelectLabel,
+  SelectItem, SelectLabel,
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
@@ -30,6 +29,7 @@ export function ChangeStatusSelect({ user }: { user: User }) {
     }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["getUser", user.id] });
+      qc.invalidateQueries({ queryKey: ["userStats"] });
     },
     onError: (error) => error.message = "Failed to update status. Please try again.",
   });
@@ -46,17 +46,23 @@ export function ChangeStatusSelect({ user }: { user: User }) {
   };
 
   return (
-    <Select defaultValue={status2text(status)} value={status2text(status)} onValueChange={changeStatus}>
-      <SelectTrigger className="w-[120px] h-8">
-        <SelectValue placeholder="Status" />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectGroup>
-          <SelectLabel>Status</SelectLabel>
-          <SelectItem value="Accepted">Accepted</SelectItem>
-          <SelectItem value="Rejected">Rejected</SelectItem>
-        </SelectGroup>
-      </SelectContent>
-    </Select>
+    <div className="flex items-center space-x-3">
+      <span className="text-sm font-medium text-gray-700 whitespace-nowrap">Change Status:</span>
+      <Select defaultValue={status2text(status)} value={status2text(status)} onValueChange={changeStatus}>
+        <SelectTrigger className="w-[140px] border-orange-200 text-orange-600 hover:bg-orange-50">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectGroup>
+            <SelectItem value="Accepted" className="text-green-600">
+              Accepted
+            </SelectItem>
+            <SelectItem value="Rejected" className="text-red-600">
+              Rejected
+            </SelectItem>
+          </SelectGroup>
+        </SelectContent>
+      </Select>
+    </div>
   );
 }

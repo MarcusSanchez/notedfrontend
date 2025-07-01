@@ -113,8 +113,3 @@ export function useNeedsToRefresh() {
 
   return { needsToRefresh, refresh, clear };
 }
-
-// other general state atoms that need to be shared and centralized:
-
-export const maskedEmailAtom = atom<string | null>(null);
-export const challengeIdAtom = atom<string | null>(null);

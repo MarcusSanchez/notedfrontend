@@ -164,6 +164,29 @@ export const ListUsersResponse = proto3.makeMessageType(
 );
 
 /**
+ * @generated from message user.v1.GetUsersStatsRequest
+ */
+export const GetUsersStatsRequest = proto3.makeMessageType(
+  "user.v1.GetUsersStatsRequest",
+  () => [
+    { no: 1, name: "token", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ],
+);
+
+/**
+ * @generated from message user.v1.GetUsersStatsResponse
+ */
+export const GetUsersStatsResponse = proto3.makeMessageType(
+  "user.v1.GetUsersStatsResponse",
+  () => [
+    { no: 1, name: "total_users", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 2, name: "total_active_users", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 3, name: "total_inactive_users", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 4, name: "total_nurses", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+  ],
+);
+
+/**
  * @generated from message user.v1.SearchUsersRequest
  */
 export const SearchUsersRequest = proto3.makeMessageType(

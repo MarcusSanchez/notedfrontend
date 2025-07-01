@@ -1,20 +1,27 @@
 "use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import React, { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger
-} from "@/components/ui/dialog"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import React, { useState } from "react";
-import { UserPlus } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useBreakpoints } from "@/hooks/use-breakpoints";
-import { PartialPatient, User } from "@/proto/user_pb";
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  UserPlus,
+  UserCheck,
+  Trash2,
+  Search,
+} from 'lucide-react';
+import { User } from "@/proto/user_pb";
+import { PartialPatient } from "@/proto/user_pb";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { fn } from "@/lib/utils";
 import {
@@ -22,17 +29,17 @@ import {
   listPatientsNotAssignedToNurse,
   unassignPatientToNurse
 } from "@/app/dashboard/(pages)/nurses/[id]/actions";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
-type AssignedPatientsProps = {
-  user: User
-  patients: PartialPatient[]
+interface AssignedPatientsProps {
+  user: User;
+  patients: PartialPatient[];
+  isLoading: boolean;
 }
 
-export function AssignedPatients({ user, patients }: AssignedPatientsProps) {
+export function AssignedPatients({ user, patients, isLoading, }: AssignedPatientsProps) {
   const qc = useQueryClient();
 
-  const unassignPatientMutation = useMutation({
+  const unassignPatientMu = useMutation({
     mutationKey: ["unassignPatient"],
     mutationFn: async (patientID: string) => await fn(() => unassignPatientToNurse({
       nurseId: user.id,
@@ -44,46 +51,85 @@ export function AssignedPatients({ user, patients }: AssignedPatientsProps) {
     },
   });
 
+  if (isLoading) return <AssignedPatientsSkeleton />;
+
   return (
-    <Card className="relative z-10">
-      <CardHeader className="flex flex-row gap-2 items-center justify-between">
-        <div>
-          <CardTitle className="text-sm sm:text-xl font-semibold">Assigned Patients</CardTitle>
-          <CardDescription>List of patients under {user?.name}&#39;s care</CardDescription>
+    <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+      <CardHeader className="border-b border-gray-100">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+              <UserCheck className="w-5 h-5 text-purple-600" />
+            </div>
+            <div>
+              <CardTitle className="text-xl font-semibold text-gray-900">
+                Assigned Patients
+              </CardTitle>
+              <CardDescription className="text-gray-600">
+                List of patients under {user.name}'s care
+              </CardDescription>
+            </div>
+          </div>
+          <div className="flex items-center space-x-3">
+            <AssignPatientDialog user={user} />
+          </div>
         </div>
-        {user && <AssignPatientDialog user={user} />}
       </CardHeader>
-      <CardContent>
-        {patients && patients?.length > 0 && (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>First Name</TableHead>
-                <TableHead>Last Name</TableHead>
-                <TableHead className="flex items-center justify-end pr-10">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {patients?.map((patient) => (
-                <TableRow key={patient.id}>
-                  <TableCell>{patient.firstName}</TableCell>
-                  <TableCell>{patient.lastName}</TableCell>
-                  <TableCell className="flex justify-end">
-                    <Button
-                      className="font-bold" variant="outline" size="sm"
-                      onClick={() => unassignPatientMutation.mutate(patient.id)}
-                    >
-                      Unassign
-                    </Button>
-                  </TableCell>
+
+      <CardContent className="p-0">
+        {patients.length > 0 ? (
+          <div className="overflow-hidden">
+            <Table>
+              <TableHeader className="bg-gray-50/80">
+                <TableRow>
+                  <TableHead className="text-gray-900 py-4 pl-6 font-semibold">First Name</TableHead>
+                  <TableHead className="text-gray-900 font-semibold">Last Name</TableHead>
+                  <TableHead className="text-right text-gray-900 font-semibold pr-8">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
-        {patients && patients?.length === 0 && (
-          <div className="flex items-center justify-center h-32">
-            <p className="text-muted-foreground">No patients assigned</p>
+              </TableHeader>
+              <TableBody>
+                {patients.map((patient, index) => (
+                  <TableRow
+                    key={patient.id}
+                    className={`hover:bg-purple-50/50 transition-colors ${
+                      index % 2 === 0 ? 'bg-white/50' : 'bg-gray-50/30'
+                    }`}
+                  >
+                    <TableCell className="font-medium py-6 pl-6 text-gray-900">
+                      {patient.firstName}
+                    </TableCell>
+                    <TableCell className="font-medium text-gray-900">
+                      {patient.lastName}
+                    </TableCell>
+                    <TableCell className="text-right pr-6">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-red-200 text-red-600 hover:bg-red-50"
+                        onClick={() => unassignPatientMu.mutate(patient.id)}
+                        disabled={unassignPatientMu.isPending}
+                      >
+                        <>
+                          <Trash2 className="w-4 h-4 mr-1" />
+                          Unassign
+                        </>
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        ) : (
+          <div className="text-center py-16 px-6">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <UserCheck className="w-8 h-8 text-gray-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">No patients assigned</h3>
+            <p className="text-gray-600 mb-6">
+              This nurse doesn't have any patients assigned yet.
+            </p>
+            <AssignPatientDialog user={user} />
           </div>
         )}
       </CardContent>
@@ -92,9 +138,10 @@ export function AssignedPatients({ user, patients }: AssignedPatientsProps) {
 }
 
 function AssignPatientDialog({ user }: { user: User }) {
-  const { isMD } = useBreakpoints();
   const qc = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
+
+  const [isOpen, setIsOpen] = useState(false);
 
   const unassignedPatientsQ = useQuery({
     queryKey: ["unassignedPatients", user.id],
@@ -102,7 +149,7 @@ function AssignPatientDialog({ user }: { user: User }) {
   });
   const unassignedPatients = unassignedPatientsQ.data?.patients;
 
-  const assignPatientToNurseMutation = useMutation({
+  const assignPatientToNurseMu = useMutation({
     mutationKey: ["assignPatientToNurse", user.id],
     mutationFn: async (patientID: string) => fn(() => assignPatientToNurse({
       nurseId: user.id,
@@ -119,61 +166,149 @@ function AssignPatientDialog({ user }: { user: User }) {
   ));
 
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button size={!isMD ? "sm" : "default"} className="font-bold">
-          <UserPlus className="h-4 w-4 mr-2" />
+        <Button
+          variant="outline"
+          className="border-blue-200 text-blue-600 hover:bg-blue-50"
+        >
+          <UserPlus className="w-4 h-4 mr-2" />
           Assign Patient
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Assign New Patient</DialogTitle>
-          <DialogDescription>Select a patient to assign to {user?.name}</DialogDescription>
+          <div className="flex items-center space-x-3 mb-4">
+            <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+              <UserPlus className="w-6 h-6 text-blue-600" />
+            </div>
+            <div>
+              <DialogTitle className="text-xl font-bold text-gray-900">
+                Assign New Patient
+              </DialogTitle>
+              <DialogDescription className="text-gray-600">
+                Select a patient to assign to {user.name}
+              </DialogDescription>
+            </div>
+          </div>
         </DialogHeader>
-        <input
-          type="text"
-          placeholder="Search patients..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full px-3 py-2 border rounded-md border-input bg-background"
-        />
-        <ScrollArea className="max-h-80">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>First Name</TableHead>
-                <TableHead>Last Name</TableHead>
-                <TableHead>Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredPatients && filteredPatients.map((patient) => (
-                <TableRow key={patient.id}>
-                  <TableCell>{patient.firstName}</TableCell>
-                  <TableCell>{patient.lastName}</TableCell>
-                  <TableCell>
-                    <Button
-                      className="font-bold" variant="outline" size="sm"
-                      onClick={() => assignPatientToNurseMutation.mutate(patient.id)}
-                      disabled={assignPatientToNurseMutation.isPending}
-                    >
-                      Assign
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {filteredPatients && filteredPatients.length === 0 && (
+
+        {/* Search Input */}
+        <div className="space-y-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Input
+              type="text"
+              placeholder="Search patients by name..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 border-gray-300 focus:border-blue-400 focus:ring-blue-400/20 bg-white/80"
+            />
+          </div>
+
+          {/* Patients Table */}
+          <div className="max-h-80 overflow-auto border border-gray-200 rounded-lg">
+            <Table>
+              <TableHeader className="bg-gray-50/80 sticky top-0">
                 <TableRow>
-                  <TableCell colSpan={3} className="text-center text-muted-foreground">
-                    No patients {unassignedPatients?.length != 0 && "matching that query"} to assign {user?.name && `to ${user.name}`}
-                  </TableCell>
+                  <TableHead className="text-gray-900 font-semibold">First Name</TableHead>
+                  <TableHead className="text-gray-900 font-semibold">Last Name</TableHead>
+                  <TableHead className="text-right text-gray-900 font-semibold pr-6">Action</TableHead>
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </ScrollArea>
+              </TableHeader>
+              <TableBody>
+                {filteredPatients && filteredPatients.length > 0 ? (
+                  filteredPatients.map((patient, index) => (
+                    <TableRow
+                      key={patient.id}
+                      className={`hover:bg-blue-50/50 transition-colors ${
+                        index % 2 === 0 ? 'bg-white/50' : 'bg-gray-50/30'
+                      }`}
+                    >
+                      <TableCell className="font-medium text-gray-900">
+                        {patient.firstName}
+                      </TableCell>
+                      <TableCell className="font-medium text-gray-900">
+                        {patient.lastName}
+                      </TableCell>
+                      <TableCell className="text-right pr-4">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-green-200 text-green-600 hover:bg-green-50"
+                          onClick={() => assignPatientToNurseMu.mutate(patient.id)}
+                          disabled={assignPatientToNurseMu.isPending}
+                        >
+                          <>
+                            <UserPlus className="w-4 h-4 mr-1" />
+                            Assign
+                          </>
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={3} className="text-center py-8 text-gray-500">
+                      {searchQuery ? (
+                        <>No patients found matching "{searchQuery}"</>
+                      ) : (
+                        <>No patients available to assign to {user.name}</>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function AssignedPatientsSkeleton() {
+  return (
+    <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+      <CardHeader className="border-b border-gray-100">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <Skeleton className="w-10 h-10 rounded-lg" />
+            <div>
+              <Skeleton className="h-6 w-40 mb-1" />
+              <Skeleton className="h-4 w-56" />
+            </div>
+          </div>
+          <div className="flex items-center space-x-3">
+            <Skeleton className="h-6 w-20 rounded-full" />
+            <Skeleton className="h-10 w-36" />
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="p-0">
+        <Table>
+          <TableHeader className="bg-gray-50/80">
+            <TableRow>
+              <TableHead><Skeleton className="h-4 w-20" /></TableHead>
+              <TableHead><Skeleton className="h-4 w-20" /></TableHead>
+              <TableHead className="text-right pr-8">
+                <Skeleton className="h-4 w-16 ml-auto" />
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {Array.from({ length: 3 }).map((_, i) => (
+              <TableRow key={i}>
+                <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                <TableCell className="text-right pr-6">
+                  <Skeleton className="h-9 w-24" />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
   );
 }

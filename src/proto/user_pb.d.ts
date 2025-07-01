@@ -459,6 +459,69 @@ export declare class ListUsersResponse extends Message<ListUsersResponse> {
 }
 
 /**
+ * @generated from message user.v1.GetUsersStatsRequest
+ */
+export declare class GetUsersStatsRequest extends Message<GetUsersStatsRequest> {
+  /**
+   * @generated from field: string token = 1;
+   */
+  token: string;
+
+  constructor(data?: PartialMessage<GetUsersStatsRequest>);
+
+  static readonly runtime: typeof proto3;
+  static readonly typeName = "user.v1.GetUsersStatsRequest";
+  static readonly fields: FieldList;
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetUsersStatsRequest;
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetUsersStatsRequest;
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetUsersStatsRequest;
+
+  static equals(a: GetUsersStatsRequest | PlainMessage<GetUsersStatsRequest> | undefined, b: GetUsersStatsRequest | PlainMessage<GetUsersStatsRequest> | undefined): boolean;
+}
+
+/**
+ * @generated from message user.v1.GetUsersStatsResponse
+ */
+export declare class GetUsersStatsResponse extends Message<GetUsersStatsResponse> {
+  /**
+   * @generated from field: int32 total_users = 1;
+   */
+  totalUsers: number;
+
+  /**
+   * @generated from field: int32 total_active_users = 2;
+   */
+  totalActiveUsers: number;
+
+  /**
+   * @generated from field: int32 total_inactive_users = 3;
+   */
+  totalInactiveUsers: number;
+
+  /**
+   * @generated from field: int32 total_nurses = 4;
+   */
+  totalNurses: number;
+
+  constructor(data?: PartialMessage<GetUsersStatsResponse>);
+
+  static readonly runtime: typeof proto3;
+  static readonly typeName = "user.v1.GetUsersStatsResponse";
+  static readonly fields: FieldList;
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetUsersStatsResponse;
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetUsersStatsResponse;
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetUsersStatsResponse;
+
+  static equals(a: GetUsersStatsResponse | PlainMessage<GetUsersStatsResponse> | undefined, b: GetUsersStatsResponse | PlainMessage<GetUsersStatsResponse> | undefined): boolean;
+}
+
+/**
  * @generated from message user.v1.SearchUsersRequest
  */
 export declare class SearchUsersRequest extends Message<SearchUsersRequest> {

@@ -16,3 +16,14 @@ export async function listUsers(req: ActionRequest<ListUsersRequest>) {
     }
   });
 }
+
+export async function getUsersStats() {
+  return action(async () => {
+    try {
+      return await uc.getUsersStats({ token: getSessionToken() });
+    } catch (error) {
+      const status = ConnectError.from(error);
+      throw new ConnectError("Failed to get your company's user's stats. Please try again.", status.code);
+    }
+  });
+}

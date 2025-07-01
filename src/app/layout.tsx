@@ -21,14 +21,14 @@ export default function RootLayout({ children, }: Readonly<{ children: ReactNode
   return (
     <html lang="en">
       <body>
-        <div className="max-w-[1560px] px-4 mx-auto">
+        <div>
           <ReactQueryProvider>
-            <ThemeProvider attribute="class" defaultTheme="system" disableTransitionOnChange>
-              <Navbar hasSession={hasSession} />
+            <ThemeProvider attribute="class" defaultTheme="light" disableTransitionOnChange>
+              {/*<Navbar hasSession={hasSession} />*/}
               <Init hasSession={hasSession}>
                 {children}
               </Init>
-              <Footer />
+              {/*<Footer />*/}
             </ThemeProvider>
           </ReactQueryProvider>
           <Toaster />

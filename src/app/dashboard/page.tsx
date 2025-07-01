@@ -1,22 +1,30 @@
 import { DashStats } from "@/app/dashboard/(components)/DashStats";
 import { PendingNurses } from "@/app/dashboard/(components)/PendingNurses";
-import { DashboardContainer } from "@/app/dashboard/(components)/DashboardContainer";
 import { EstimatedSubscriptionCost } from "@/app/dashboard/(components)/EstimatedSubscriptionCost";
-import { Viewport } from "next";
-
-export const viewport: Viewport = {
-  initialScale: 0.68,
-};
 
 export default function Dashboard() {
   return (
-    <DashboardContainer>
-      <h1 className="w-min text-nowrap bg-background text-3xl font-bold mb-4">Dashboard</h1>
+    <div className="space-y-8">
+      {/* Page Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+            Dashboard
+          </h1>
+          <p className="text-gray-600 mt-2 text-lg">
+            Welcome back! Here's what's happening with your healthcare team.
+          </p>
+        </div>
+      </div>
+
+      {/* Stats Grid */}
       <DashStats />
-      <div className="grid gap-6 mt-6 grid-cols-1 lg:grid-cols-2">
+
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <PendingNurses />
         <EstimatedSubscriptionCost />
       </div>
-    </DashboardContainer>
+    </div>
   );
 }

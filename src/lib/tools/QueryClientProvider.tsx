@@ -28,16 +28,20 @@ const ReactQueryProvider = ({ children }: { children: ReactNode }) => {
       };
 
       const retry = (failureCount: number, error: unknown) => {
-        const status = statusFrom(error);
-        const nonRetryableCodes = [
-          Code.Unauthenticated,
-          Code.NotFound,
-          Code.DeadlineExceeded,
-          Code.InvalidArgument,
-          Code.PermissionDenied,
-        ];
-        if (failureCount > 3) return false;
-        return !nonRetryableCodes.includes(status.code);
+        return false;  // never retry
+
+        // const status = statusFrom(error);
+        // const nonRetryableCodes = [
+        //   Code.Unauthenticated,
+        //   Code.NotFound,
+        //   Code.DeadlineExceeded,
+        //   Code.InvalidArgument,
+        //   Code.PermissionDenied,
+        //   Code.AlreadyExists,
+        //   Code.ResourceExhausted,
+        // ];
+        // if (failureCount > 3) return false;
+        // return !nonRetryableCodes.includes(status.code);
       };
 
       return new QueryClient({
